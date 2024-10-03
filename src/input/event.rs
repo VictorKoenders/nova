@@ -56,6 +56,14 @@ pub enum Event {
         axis: GamepadAxis,
         value: f32,
     },
+    WindowResized {
+        width: u32,
+        height: u32,
+    },
+
+    TextInput {
+        text: String,
+    },
 }
 
 impl Event {
@@ -155,6 +163,23 @@ impl Event {
                             value,
                         });
                     }
+                }
+
+                SDL_WINDOWEVENT => {
+                    let e = &event.window;
+                    if e.data1 > 0 && e.data2 > 0 {
+                        let width = e.data1 as u32;
+                        let height = e.data2 as u32;
+                        return Some(Event::WindowResized { width, height });
+                    }
+                }
+
+                SDL_TEXTINPUT => {
+                    let e = &event.text.text;
+                    let text = std::ffi::CStr::from_ptr(e.as_ptr())
+                        .to_string_lossy()
+                        .into_owned();
+                    return Some(Event::TextInput { text });
                 }
 
                 _ => {}
